@@ -14,6 +14,7 @@ from copy import deepcopy
 # conda activate gaussian_splatting
 # cd C:\Users\fni\code\gs
 # python edit_ply.py -m .\models\truck -s .\data\tandt_db\tandt\truck
+# python edit_ply.py -m .\\output\36a65963-9 -s .\data\ficus
 
 def masked_select_multidim(input, mask):
     assert(len(input.shape) == 2)
@@ -51,10 +52,6 @@ if __name__ == "__main__":
     # choose gaussians that are big in all 3 dimensions
     scaling_gt_1d = torch.bitwise_and( torch.bitwise_and(scaling_gt[:,0], scaling_gt[:,1]), scaling_gt[:,2]) 
 
-    # scaling_0 = torch.masked_select(scaling[:,0], scaling_gt_1d)
-    # scaling_1 = torch.masked_select(scaling[:,1], scaling_gt_1d)
-    # scaling_2 = torch.masked_select(scaling[:,2], scaling_gt_1d)
-    # gaussians2._scaling = torch.stack((scaling_0, scaling_1, scaling_2))
     gaussians2._scaling = masked_select_multidim(gaussians._scaling, scaling_gt_1d)
     gaussians2._xyz = masked_select_multidim(gaussians._xyz, scaling_gt_1d)
 
