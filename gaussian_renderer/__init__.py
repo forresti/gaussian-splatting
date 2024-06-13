@@ -14,6 +14,30 @@ import math
 from diff_gaussian_rasterization import GaussianRasterizationSettings, GaussianRasterizer
 from scene.gaussian_model import GaussianModel
 from utils.sh_utils import eval_sh
+import time
+
+def benchmark_copy(t, name, repeat):
+    # t is a tensor
+
+    for i in range(repeat + 1):
+
+        start = time.perf_counter_ns()
+        t_copy = t.clone()
+        end = time.perf_counter_ns()
+        del t_copy
+        torch.cuda.empty_cache()
+
+        time_ms = float(end - start)/1e6
+        time_sec = time_ms / 1e3
+
+        numel = t.numel()  # number of elements
+        gb = float(numel) * 4 / 1e9 # assume fp32
+
+        gb_per_sec = gb/time_sec
+
+
+        print(f"{name} copy time: {float(end - start)/1e6} ms, numel: {numel}, gb/s: {gb_per_sec} ")   
+        # TODO(fni): take the average or something
 
 def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, scaling_modifier = 1.0, override_color = None):
     """
@@ -80,6 +104,13 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
             shs = pc.get_features
     else:
         colors_precomp = override_color
+
+
+    # benchmark_copy(shs, "shs", 10)
+    # benchmark_copy(means3D, "means3D", 10)
+    # benchmark_copy(opacity, "opacity", 10)
+    # benchmark_copy(rotations, "rotations", 10)
+    # benchmark_copy(scales, "scales", 10)
 
     # Rasterize visible Gaussians to image, obtain their radii (on screen). 
     rendered_image, radii = rasterizer(
